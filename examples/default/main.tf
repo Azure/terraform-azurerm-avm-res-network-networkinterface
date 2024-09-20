@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.74"
+      version = ">= 3.116.0, < 5.0.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -13,7 +13,11 @@ terraform {
 }
 
 provider "azurerm" {
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
 
 
@@ -43,17 +47,21 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
+# Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
   location            = azurerm_resource_group.this.location
-  name                = "TODO" # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
+  name                = module.naming.managed_disk.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = var.enable_telemetry # see variables.tf
+
+  ip_configurations = {
+    "ipconfig1" = {
+      name      = "ipconfig1"
+      subnet_id = azurerm_subnet.this.id
+    }
+  }
 }
