@@ -58,9 +58,15 @@ module "test" {
 
   ip_configurations = {
     "ipconfig1" = {
-      name      = "internal"
-      subnet_id = azurerm_subnet.this.id
+      name                          = "internal"
+      subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
+    }
+  }
+
+  network_security_group_association = {
+    "example" = {
+      network_security_group_id = azurerm_network_security_group.this.id
     }
   }
 }

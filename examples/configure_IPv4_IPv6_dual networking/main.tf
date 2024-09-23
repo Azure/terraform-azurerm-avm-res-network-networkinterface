@@ -57,10 +57,17 @@ module "test" {
   enable_telemetry = var.enable_telemetry # see variables.tf
 
   ip_configurations = {
-    "ipconfig1" = {
-      name      = "internal"
+    "dualstackIPv4config" = {
+      name      = "dsIP4Config"
       subnet_id = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
+      private_ip_address_allocation = "IPv4"
     }
-  }
+    "dualstackIPv6config" = {
+      name      = "dsIP6Config"
+      subnet_id = azurerm_subnet.this.id
+      private_ip_address_allocation = "Dynamic"
+      private_ip_address_version = "IPv4"
+    }
+  }  
 }

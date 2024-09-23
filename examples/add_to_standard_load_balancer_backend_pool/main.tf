@@ -58,9 +58,16 @@ module "test" {
 
   ip_configurations = {
     "ipconfig1" = {
-      name      = "internal"
-      subnet_id = azurerm_subnet.this.id
+      name                          = "internal"
+      subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
+    }
+  }
+
+  load_balancer_backend_address_pool_association = {
+    "example" = {
+      load_balancer_backend_address_pool_id = azurerm_lb_backend_address_pool.this.id
+      ip_configuration_name                 = "example"
     }
   }
 }

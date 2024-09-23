@@ -37,7 +37,7 @@ variable "accelerated_networking_enabled" {
 
 variable "application_gateway_backend_address_pool_association" {
   type = map(object({
-    application_gateway_backend_address_pool_id = string
+    application_gateway_backend_address_pool_id = list(string)
     ip_configuration_name                       = string
   }))
   default     = {}
@@ -50,8 +50,7 @@ DESCRIPTION
 
 variable "application_security_group_association" {
   type = map(object({
-    application_security_group_id = string
-    ip_configuration_name         = string
+    application_security_group_id = list(string)
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -151,8 +150,8 @@ variable "ip_forwarding_enabled" {
 
 variable "load_balancer_backend_address_pool_association" {
   type = map(object({
-    backend_address_pool_id = string
-    ip_configuration_name   = string
+    load_balancer_backend_address_pool_id = list(string)
+    ip_configuration_name                 = string
   }))
   default     = {}
   description = <<DESCRIPTION
@@ -183,7 +182,7 @@ DESCRIPTION
 
 variable "nat_rule_association" {
   type = map(object({
-    nat_rule_id           = string
+    nat_rule_id           = list(string)
     ip_configuration_name = string
   }))
   default     = {}
@@ -196,8 +195,7 @@ DESCRIPTION
 
 variable "network_security_group_association" {
   type = map(object({
-    network_security_group_id = string
-    ip_configuration_name     = string
+    network_security_group_id = list(string)
   }))
   default     = {}
   description = <<DESCRIPTION
