@@ -134,7 +134,7 @@ module "test" {
 
   application_gateway_backend_address_pool_association = {
     "example" = {
-      application_gateway_backend_address_pool_id = one(azurerm_application_gateway.this.backend_address_pool).id
+      application_gateway_backend_address_pool_id = tolist(azurerm_application_gateway.this.backend_address_pool).0.id
       ip_configuration_name                       = "internal"
     }
   }
