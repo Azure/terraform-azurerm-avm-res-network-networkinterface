@@ -49,7 +49,7 @@ resource "azurerm_resource_group" "this" {
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
-  source = "../../"
+  source              = "../../"
   location            = azurerm_resource_group.this.location
   name                = module.naming.managed_disk.name_unique
   resource_group_name = azurerm_resource_group.this.name
@@ -58,8 +58,8 @@ module "test" {
 
   ip_configurations = {
     "ipconfig1" = {
-      name      = "internal"
-      subnet_id = azurerm_subnet.this.id
+      name                          = "internal"
+      subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
     }
   }

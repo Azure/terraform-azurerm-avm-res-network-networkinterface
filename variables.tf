@@ -121,11 +121,6 @@ variable "ip_configurations" {
     primary                                            = optional(bool, false)
     private_ip_address                                 = optional(string, null)
   }))
-  default = {
-    ipconfig1 = {
-      name = "ipconfig1"
-    }
-  }
   description = "A map of ip configurations for the network interface. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time."
 
   validation {

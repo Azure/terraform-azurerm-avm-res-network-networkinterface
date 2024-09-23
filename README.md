@@ -93,7 +93,7 @@ Type:
 
 ```hcl
 map(object({
-    application_gateway_backend_address_pool_id = string
+    application_gateway_backend_address_pool_id = list(string)
     ip_configuration_name                       = string
   }))
 ```
@@ -110,8 +110,7 @@ Type:
 
 ```hcl
 map(object({
-    application_security_group_id = string
-    ip_configuration_name         = string
+    application_security_group_id = list(string)
   }))
 ```
 
@@ -214,8 +213,8 @@ Type:
 
 ```hcl
 map(object({
-    backend_address_pool_id = string
-    ip_configuration_name   = string
+    load_balancer_backend_address_pool_id = list(string)
+    ip_configuration_name                 = string
   }))
 ```
 
@@ -249,7 +248,7 @@ Type:
 
 ```hcl
 map(object({
-    nat_rule_id           = string
+    nat_rule_id           = list(string)
     ip_configuration_name = string
   }))
 ```
@@ -266,8 +265,7 @@ Type:
 
 ```hcl
 map(object({
-    network_security_group_id = string
-    ip_configuration_name     = string
+    network_security_group_id = list(string)
   }))
 ```
 
