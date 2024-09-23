@@ -1,3 +1,30 @@
+variable "ip_configurations" {
+  type = map(object({
+    name                                               = string
+    gateway_load_balancer_frontend_ip_configuration_id = optional(string, null)
+    subnet_id                                          = string
+    private_ip_address_version                         = optional(string, "IPv4")
+    private_ip_address_allocation                      = optional(string, "Dynamic")
+    public_ip_address_id                               = optional(string, null)
+    primary                                            = optional(bool, false)
+    private_ip_address                                 = optional(string, null)
+  }))
+  description = "A map of ip configurations for the network interface. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time."
+
+  validation {
+    condition     = alltrue([for config in var.ip_configurations : contains(["IPv4", "IPv6"], config.private_ip_address_version)])
+    error_message = "The private IP address version must be 'IPv4' or 'IPv6'."
+  }
+  validation {
+    condition     = alltrue([for config in var.ip_configurations : contains(["Static", "Dynamic"], config.private_ip_address_allocation)])
+    error_message = "The private IP address version must be 'Static' or 'Dynamic'."
+  }
+  validation {
+    condition     = length(var.ip_configurations) <= 1 || anytrue([for ip in var.ip_configurations : ip.primary])
+    error_message = "When there is more than one IP configuration, at least one must have 'primary' set to true."
+  }
+}
+
 variable "location" {
   type        = string
   description = "The Azure location where the network interface should exist."
@@ -108,33 +135,6 @@ variable "internal_dns_name_label" {
   type        = string
   default     = null
   description = "(Optional) The (relative) DNS Name used for internal communications between virtual machines in the same virtual network."
-}
-
-variable "ip_configurations" {
-  type = map(object({
-    name                                               = string
-    gateway_load_balancer_frontend_ip_configuration_id = optional(string, null)
-    subnet_id                                          = string
-    private_ip_address_version                         = optional(string, "IPv4")
-    private_ip_address_allocation                      = optional(string, "Dynamic")
-    public_ip_address_id                               = optional(string, null)
-    primary                                            = optional(bool, false)
-    private_ip_address                                 = optional(string, null)
-  }))
-  description = "A map of ip configurations for the network interface. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time."
-
-  validation {
-    condition     = alltrue([for config in var.ip_configurations : contains(["IPv4", "IPv6"], config.private_ip_address_version)])
-    error_message = "The private IP address version must be 'IPv4' or 'IPv6'."
-  }
-  validation {
-    condition     = alltrue([for config in var.ip_configurations : contains(["Static", "Dynamic"], config.private_ip_address_allocation)])
-    error_message = "The private IP address version must be 'Static' or 'Dynamic'."
-  }
-  validation {
-    condition     = length(var.ip_configurations) <= 1 || anytrue([for ip in var.ip_configurations : ip.primary])
-    error_message = "When there is more than one IP configuration, at least one must have 'primary' set to true."
-  }
 }
 
 variable "ip_forwarding_enabled" {

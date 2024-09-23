@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -47,6 +47,20 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_virtual_network" "this" {
+  address_space       = ["10.0.0.0/16", "fd00:db8:deca::/48"]
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_subnet" "this" {
+  address_prefixes     = ["10.0.0.0/24", "fd00:db8:deca:deed::/64"]
+  name                 = "example"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
   source              = "../../"
@@ -54,20 +68,21 @@ module "test" {
   name                = module.naming.managed_disk.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = true
 
   ip_configurations = {
     "dualstackIPv4config" = {
       name                          = "dsIP4Config"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
-      private_ip_address_allocation = "IPv4"
+      private_ip_address_version    = "IPv4"
+      primary                       = true
     }
     "dualstackIPv6config" = {
       name                          = "dsIP6Config"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
-      private_ip_address_version    = "IPv4"
+      private_ip_address_version    = "IPv6"
     }
   }
 }

@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -47,6 +47,26 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_virtual_network" "this" {
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_subnet" "this" {
+  address_prefixes     = ["10.0.1.0/24"]
+  name                 = "example"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+}
+
+resource "azurerm_network_security_group" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
   source              = "../../"
@@ -54,7 +74,7 @@ module "test" {
   name                = module.naming.managed_disk.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = true
 
   ip_configurations = {
     "ipconfig1" = {

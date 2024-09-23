@@ -24,7 +24,7 @@ Things to do:
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9.6)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 5.0.0)
 
@@ -52,6 +52,25 @@ The following resources are used by this module:
 ## Required Inputs
 
 The following input variables are required:
+
+### <a name="input_ip_configurations"></a> [ip\_configurations](#input\_ip\_configurations)
+
+Description: A map of ip configurations for the network interface. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+
+Type:
+
+```hcl
+map(object({
+    name                                               = string
+    gateway_load_balancer_frontend_ip_configuration_id = optional(string, null)
+    subnet_id                                          = string
+    private_ip_address_version                         = optional(string, "IPv4")
+    private_ip_address_allocation                      = optional(string, "Dynamic")
+    public_ip_address_id                               = optional(string, null)
+    primary                                            = optional(bool, false)
+    private_ip_address                                 = optional(string, null)
+  }))
+```
 
 ### <a name="input_location"></a> [location](#input\_location)
 
@@ -165,35 +184,6 @@ Description: (Optional) The (relative) DNS Name used for internal communications
 Type: `string`
 
 Default: `null`
-
-### <a name="input_ip_configurations"></a> [ip\_configurations](#input\_ip\_configurations)
-
-Description: A map of ip configurations for the network interface. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
-
-Type:
-
-```hcl
-map(object({
-    name                                               = string
-    gateway_load_balancer_frontend_ip_configuration_id = optional(string, null)
-    subnet_id                                          = string
-    private_ip_address_version                         = optional(string, "IPv4")
-    private_ip_address_allocation                      = optional(string, "Dynamic")
-    public_ip_address_id                               = optional(string, null)
-    primary                                            = optional(bool, false)
-    private_ip_address                                 = optional(string, null)
-  }))
-```
-
-Default:
-
-```json
-{
-  "ipconfig1": {
-    "name": "ipconfig1"
-  }
-}
-```
 
 ### <a name="input_ip_forwarding_enabled"></a> [ip\_forwarding\_enabled](#input\_ip\_forwarding\_enabled)
 

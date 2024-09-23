@@ -5,7 +5,7 @@ This shows how to create a network interface and connect it to a NAT rule of an 
 
 ```hcl
 terraform {
-  required_version = "~> 1.5"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -53,6 +53,48 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+resource "azurerm_virtual_network" "this" {
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_subnet" "this" {
+  address_prefixes     = ["10.0.1.0/24"]
+  name                 = "example"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+}
+
+resource "azurerm_public_ip" "this" {
+  allocation_method   = "Static"
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_lb" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+
+  frontend_ip_configuration {
+    name                 = "primary"
+    public_ip_address_id = azurerm_public_ip.this.id
+  }
+}
+
+resource "azurerm_lb_nat_rule" "this" {
+  backend_port                   = 3389
+  frontend_ip_configuration_name = "primary"
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "RDPAccess"
+  protocol                       = "Tcp"
+  resource_group_name            = azurerm_resource_group.this.name
+  frontend_port                  = 3389
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
   source              = "../../"
@@ -60,7 +102,7 @@ module "test" {
   name                = module.naming.managed_disk.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
-  enable_telemetry = var.enable_telemetry # see variables.tf
+  enable_telemetry = true
 
   ip_configurations = {
     "ipconfig1" = {
@@ -72,7 +114,8 @@ module "test" {
 
   nat_rule_association = {
     "example" = {
-      nat_rule_id = azurerm_lb_nat_rule.this.id
+      nat_rule_id           = azurerm_lb_nat_rule.this.id
+      ip_configuration_name = "internal"
     }
   }
 }
@@ -83,7 +126,7 @@ module "test" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.5)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.116.0, < 5.0.0)
 
@@ -93,7 +136,12 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_lb.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) (resource)
+- [azurerm_lb_nat_rule.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_nat_rule) (resource)
+- [azurerm_public_ip.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_subnet.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
+- [azurerm_virtual_network.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
