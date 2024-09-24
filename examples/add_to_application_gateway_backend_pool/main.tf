@@ -1,8 +1,3 @@
-# This allows us to identify the Application Gateway backend pool ID based on its name 'example-backend-pool-2'
-locals {
-  backend_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
-}
-
 terraform {
   required_version = "~> 1.9"
   required_providers {

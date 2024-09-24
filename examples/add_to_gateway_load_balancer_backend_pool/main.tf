@@ -75,33 +75,33 @@ resource "azurerm_lb" "this" {
   sku                 = "Gateway"
 
   frontend_ip_configuration {
-    name = "example"
-    subnet_id = azurerm_subnet.this.id
+    name                          = "example"
+    subnet_id                     = azurerm_subnet.this.id
     private_ip_address_allocation = "Dynamic"
-    private_ip_address_version = "IPv4"
+    private_ip_address_version    = "IPv4"
   }
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
-  name            = "example"  
+  name            = "example"
   loadbalancer_id = azurerm_lb.this.id
 
   tunnel_interface {
     identifier = 901
-    type = "External"
-    protocol = "VXLAN"
-    port = 10801
+    type       = "External"
+    protocol   = "VXLAN"
+    port       = 10801
   }
 }
 
 resource "azurerm_lb_probe" "this" {
-  name            = "example"
-  loadbalancer_id = azurerm_lb.this.id
-  protocol = "Http"
-  port = 80
-  request_path = "/"
+  name                = "example"
+  loadbalancer_id     = azurerm_lb.this.id
+  protocol            = "Http"
+  port                = 80
+  request_path        = "/"
   interval_in_seconds = 5
-  probe_threshold = 2
+  probe_threshold     = 2
 }
 
 resource "azurerm_lb_rule" "this" {
@@ -111,7 +111,7 @@ resource "azurerm_lb_rule" "this" {
   frontend_port                  = 0
   backend_port                   = 0
   frontend_ip_configuration_name = "example"
-  probe_id = azurerm_lb_probe.this.id
+  probe_id                       = azurerm_lb_probe.this.id
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location

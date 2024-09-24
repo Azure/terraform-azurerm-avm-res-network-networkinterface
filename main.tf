@@ -38,7 +38,7 @@ resource "azurerm_network_interface" "this" {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = { for key, value in var.load_balancer_backend_address_pool_association : key => value if length(value.load_balancer_backend_address_pool_id) > 0 }
+  for_each = var.load_balancer_backend_address_pool_association != null ? var.load_balancer_backend_address_pool_association : {}
 
   backend_address_pool_id = each.value.load_balancer_backend_address_pool_id
   ip_configuration_name   = each.value.ip_configuration_name

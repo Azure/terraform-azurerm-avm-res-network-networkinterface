@@ -69,7 +69,7 @@ variable "application_gateway_backend_address_pool_association" {
   })
   default     = null
   description = <<DESCRIPTION
-A map describing the application gateway to associate with the resource. This includes the following properties:
+An object describing the application gateway to associate with the resource. This includes the following properties:
 - `application_gateway_backend_address_pool_id` - The resource ID of the application gateway backend address pool.
 - `ip_configuration_name` - The name of the network interface IP configuration.
 DESCRIPTION 
@@ -139,15 +139,15 @@ variable "ip_forwarding_enabled" {
 
 variable "load_balancer_backend_address_pool_association" {
   type = map(object({
-    load_balancer_backend_address_pool_id = list(string)
+    load_balancer_backend_address_pool_id = string
     ip_configuration_name                 = string
   }))
-  default     = {}
+  default     = null
   description = <<DESCRIPTION
-(Optional) A map describing the load balancer to associate with the resource. This includes the following properties:
+A map of object describing the load balancer to associate with the resource. This includes the following properties:
 - `load_balancer_backend_address_pool_id` - The resource ID of the load balancer backend address pool.
 - `ip_configuration_name` - The name of the network interface IP configuration.
-DESCRIPTION  
+DESCRIPTION 
 }
 
 variable "lock" {
