@@ -63,11 +63,11 @@ variable "accelerated_networking_enabled" {
 }
 
 variable "application_gateway_backend_address_pool_association" {
-  type = map(object({
-    application_gateway_backend_address_pool_id = list(string)
+  type = object({
+    application_gateway_backend_address_pool_id = string
     ip_configuration_name                       = string
-  }))
-  default     = {}
+  })
+  default     = null
   description = <<DESCRIPTION
 A map describing the application gateway to associate with the resource. This includes the following properties:
 - `application_gateway_backend_address_pool_id` - The resource ID of the application gateway backend address pool.
@@ -76,10 +76,10 @@ DESCRIPTION
 }
 
 variable "application_security_group_association" {
-  type = map(object({
+  type = object({
     application_security_group_id = list(string)
-  }))
-  default     = {}
+  })
+  default     = null
   description = <<DESCRIPTION
 A map describing the application security group to associate with the resource. This includes the following properties:
 - `application_security_group_id` - The resource ID of the application security group.

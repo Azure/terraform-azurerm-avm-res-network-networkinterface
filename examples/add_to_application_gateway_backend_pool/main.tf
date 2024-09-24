@@ -1,3 +1,8 @@
+# This allows us to identify the Application Gateway backend pool ID based on its name
+locals {
+  backend_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
+}
+
 terraform {
   required_version = "~> 1.9"
   required_providers {
@@ -54,8 +59,9 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  address_prefixes     = ["10.0.1.0/24"]
-  name                 = "example"
+  count                = 2
+  address_prefixes     = ["10.0.${count.index + 1}.0/24"]
+  name                 = "example_${count.index + 1}"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
 }
@@ -73,39 +79,67 @@ resource "azurerm_application_gateway" "this" {
   resource_group_name = azurerm_resource_group.this.name
 
   backend_address_pool {
-    name = "${azurerm_virtual_network.this.name}-backend-pool"
+    name = "${azurerm_virtual_network.this.name}-backend-pool-1"
+  }
+  backend_address_pool {
+    name = "${azurerm_virtual_network.this.name}-backend-pool-2"
   }
   backend_http_settings {
     cookie_based_affinity = "Disabled"
-    name                  = "${azurerm_virtual_network.this.name}-backend-http"
+    name                  = "${azurerm_virtual_network.this.name}-backend-http-80"
     port                  = 80
     protocol              = "Http"
-    request_timeout       = 1
+    request_timeout       = 20
+  }
+  backend_http_settings {
+    cookie_based_affinity = "Disabled"
+    name                  = "${azurerm_virtual_network.this.name}-backend-http-8080"
+    port                  = 8080
+    protocol              = "Http"
+    request_timeout       = 20
   }
   frontend_ip_configuration {
     name                 = "${azurerm_virtual_network.this.name}-frontend-ip"
     public_ip_address_id = azurerm_public_ip.this.id
   }
   frontend_port {
-    name = "${azurerm_virtual_network.this.name}-frontend-port"
+    name = "${azurerm_virtual_network.this.name}-frontend-port-80"
     port = 80
+  }
+  frontend_port {
+    name = "${azurerm_virtual_network.this.name}-frontend-port-8080"
+    port = 8080
   }
   gateway_ip_configuration {
     name      = "example"
-    subnet_id = azurerm_subnet.this.id
+    subnet_id = azurerm_subnet.this[0].id
   }
   http_listener {
     frontend_ip_configuration_name = "${azurerm_virtual_network.this.name}-frontend-ip"
-    frontend_port_name             = "${azurerm_virtual_network.this.name}-frontend-port"
-    name                           = "${azurerm_virtual_network.this.name}-listener-http"
+    frontend_port_name             = "${azurerm_virtual_network.this.name}-frontend-port-80"
+    name                           = "${azurerm_virtual_network.this.name}-listener-80"
+    protocol                       = "Http"
+  }
+  http_listener {
+    frontend_ip_configuration_name = "${azurerm_virtual_network.this.name}-frontend-ip"
+    frontend_port_name             = "${azurerm_virtual_network.this.name}-frontend-port-8080"
+    name                           = "${azurerm_virtual_network.this.name}-listener-8080"
     protocol                       = "Http"
   }
   request_routing_rule {
-    http_listener_name         = "${azurerm_virtual_network.this.name}-listener-http"
-    name                       = "${azurerm_virtual_network.this.name}-rule"
+    http_listener_name         = "${azurerm_virtual_network.this.name}-listener-80"
+    name                       = "${azurerm_virtual_network.this.name}-rule-1"
     rule_type                  = "Basic"
-    backend_address_pool_name  = "${azurerm_virtual_network.this.name}-backend-http"
-    backend_http_settings_name = "${azurerm_virtual_network.this.name}-backend-http"
+    backend_address_pool_name  = "${azurerm_virtual_network.this.name}-backend-pool-1"
+    backend_http_settings_name = "${azurerm_virtual_network.this.name}-backend-http-80"
+    priority                   = 15
+  }
+  request_routing_rule {
+    http_listener_name         = "${azurerm_virtual_network.this.name}-listener-8080"
+    name                       = "${azurerm_virtual_network.this.name}-rule-2"
+    rule_type                  = "Basic"
+    backend_address_pool_name  = "${azurerm_virtual_network.this.name}-backend-pool-2"
+    backend_http_settings_name = "${azurerm_virtual_network.this.name}-backend-http-8080"
     priority                   = 25
   }
   sku {
@@ -125,17 +159,15 @@ module "test" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
+    "example" = {
       name                          = "internal"
-      subnet_id                     = azurerm_subnet.this.id
+      subnet_id                     = azurerm_subnet.this[1].id
       private_ip_address_allocation = "Dynamic"
     }
   }
 
   application_gateway_backend_address_pool_association = {
-    "example" = {
-      application_gateway_backend_address_pool_id = tolist(azurerm_application_gateway.this.backend_address_pool).0.id
-      ip_configuration_name                       = "internal"
-    }
+    application_gateway_backend_address_pool_id = local.backend_pool_id
+    ip_configuration_name                       = "internal"
   }
 }

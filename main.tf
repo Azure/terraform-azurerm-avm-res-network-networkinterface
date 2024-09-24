@@ -46,15 +46,15 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
 }
 
 resource "azurerm_network_interface_application_gateway_backend_address_pool_association" "this" {
-  for_each = { for key, value in var.application_gateway_backend_address_pool_association : key => value if length(value.application_gateway_backend_address_pool_id) > 0 }
+  count = var.application_gateway_backend_address_pool_association != null ? 1 : 0
 
-  backend_address_pool_id = each.value.application_gateway_backend_address_pool_id
-  ip_configuration_name   = each.value.ip_configuration_name
+  backend_address_pool_id = var.application_gateway_backend_address_pool_association.application_gateway_backend_address_pool_id
+  ip_configuration_name   = var.application_gateway_backend_address_pool_association.ip_configuration_name
   network_interface_id    = azurerm_network_interface.this.id
 }
 
 resource "azurerm_network_interface_application_security_group_association" "this" {
-  for_each = { for key, value in var.application_security_group_association : key => value if length(value.application_security_group_id) > 0 }
+  for_each = toset{ for key, value in var.application_security_group_association : key => value if length(value.application_security_group_id) > 0 }
 
   application_security_group_id = each.value.application_security_group_id
   network_interface_id          = azurerm_network_interface.this.id

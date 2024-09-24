@@ -14,8 +14,3 @@ output "resource_group_name" {
   description = "The name of the resource group."
   value       = var.resource_group_name
 }
-
-output "resource_id" {
-  description = "This is the full output for the resource."
-  value       = azurerm_network_interface.this.id
-}

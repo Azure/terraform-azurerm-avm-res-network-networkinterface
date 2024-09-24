@@ -77,7 +77,7 @@ module "test" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
+    "example" = {
       name                          = "internal"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
