@@ -62,9 +62,10 @@ resource "azurerm_subnet" "this" {
 }
 
 resource "azurerm_application_security_group" "this" {
-  location            = azurerm_resource_group.this.location
-  name                = "example"
+  count = 3
+  name                = "example-${count.index}"
   resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
@@ -84,9 +85,5 @@ module "test" {
     }
   }
 
-  application_security_group_association = {
-    "example" = {
-      application_security_group_id = azurerm_application_security_group.this.id
-    }
-  }
+  application_security_group_ids = azurerm_application_security_group.this.*.id
 }

@@ -72,16 +72,46 @@ resource "azurerm_lb" "this" {
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Gateway"
 
   frontend_ip_configuration {
-    name                 = "primary"
-    public_ip_address_id = azurerm_public_ip.this.id
+    name = "example"
+    subnet_id = azurerm_subnet.this.id
+    private_ip_address_allocation = "Dynamic"
+    private_ip_address_version = "IPv4"
   }
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
+  name            = "example"  
   loadbalancer_id = azurerm_lb.this.id
+
+  tunnel_interface {
+    identifier = 901
+    type = "External"
+    protocol = "VXLAN"
+    port = 10801
+  }
+}
+
+resource "azurerm_lb_probe" "this" {
   name            = "example"
+  loadbalancer_id = azurerm_lb.this.id
+  protocol = "Http"
+  port = 80
+  request_path = "/"
+  interval_in_seconds = 5
+  probe_threshold = 2
+}
+
+resource "azurerm_lb_rule" "this" {
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "example"
+  protocol                       = "All"
+  frontend_port                  = 0
+  backend_port                   = 0
+  frontend_ip_configuration_name = "example"
+  probe_id = azurerm_lb_probe.this.id
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
@@ -94,11 +124,12 @@ module "test" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
+    "example" = {
       name                                               = "internal"
       subnet_id                                          = azurerm_subnet.this.id
       private_ip_address_allocation                      = "Dynamic"
-      gateway_load_balancer_frontend_ip_configuration_id = "azurerm_lb.this.frontend_ip_configuration[0].id"
+      public_ip_address_id                               = azurerm_public_ip.this.id
+      gateway_load_balancer_frontend_ip_configuration_id = azurerm_lb.this.frontend_ip_configuration[0].id
     }
   }
 }

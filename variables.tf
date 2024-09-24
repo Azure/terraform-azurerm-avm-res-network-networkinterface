@@ -75,16 +75,10 @@ A map describing the application gateway to associate with the resource. This in
 DESCRIPTION 
 }
 
-variable "application_security_group_association" {
-  type = object({
-    application_security_group_id = list(string)
-  })
+variable "application_security_group_ids" {
+  type        = list(string)
   default     = null
-  description = <<DESCRIPTION
-A map describing the application security group to associate with the resource. This includes the following properties:
-- `application_security_group_id` - The resource ID of the application security group.
-- `ip_configuration_name` - The name of the network interface IP configuration.
-DESCRIPTION 
+  description = "(Optional) List of application security group IDs."
 }
 
 variable "auxiliary_mode" {
@@ -188,16 +182,10 @@ A map describing the NAT  gateway to associate with the resource. This includes 
 DESCRIPTION 
 }
 
-variable "network_security_group_association" {
-  type = map(object({
-    network_security_group_id = list(string)
-  }))
-  default     = {}
-  description = <<DESCRIPTION
-A map describing the network security group to associate with the resource. This includes the following properties:
-- `network_security_group_id` - The resource ID of the network security group.
-- `ip_configuration_name` - The name of the network interface IP configuration.
-DESCRIPTION 
+variable "network_security_group_ids" {
+  type        = list(string)
+  default     = null
+  description = "(Optional) List of network security group IDs."
 }
 
 variable "tags" {

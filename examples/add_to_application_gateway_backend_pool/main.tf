@@ -1,4 +1,4 @@
-# This allows us to identify the Application Gateway backend pool ID based on its name
+# This allows us to identify the Application Gateway backend pool ID based on its name 'example-backend-pool-2'
 locals {
   backend_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
 }
@@ -167,7 +167,7 @@ module "test" {
   }
 
   application_gateway_backend_address_pool_association = {
-    application_gateway_backend_address_pool_id = local.backend_pool_id
+    application_gateway_backend_address_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
     ip_configuration_name                       = "internal"
   }
 }
