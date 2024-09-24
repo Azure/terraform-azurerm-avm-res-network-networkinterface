@@ -63,16 +63,17 @@ resource "azurerm_subnet" "this" {
 
 resource "azurerm_application_security_group" "this" {
   count = 3
+
+  location            = azurerm_resource_group.this.location
   name                = "example-${count.index}"
   resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true

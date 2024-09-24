@@ -64,7 +64,7 @@ resource "azurerm_subnet" "this" {
 module "test" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true

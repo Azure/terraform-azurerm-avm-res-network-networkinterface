@@ -171,12 +171,12 @@ DESCRIPTION
 
 variable "nat_rule_association" {
   type = map(object({
-    nat_rule_id           = list(string)
+    nat_rule_id           = string
     ip_configuration_name = string
   }))
   default     = {}
   description = <<DESCRIPTION
-A map describing the NAT  gateway to associate with the resource. This includes the following properties:
+A map describing the NAT rule to associate with the resource. This includes the following properties:
 - `nat_rule_id` - The resource ID of the NAT rule.
 - `ip_configuration_name` - The name of the network interface IP configuration.
 DESCRIPTION 

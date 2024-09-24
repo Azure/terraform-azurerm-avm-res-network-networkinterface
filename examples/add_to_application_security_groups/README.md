@@ -1,5 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
-# Add to an existing application security group
+# Add to existing application security groups
 
 This shows how to create network interface and add it to an existing application security group.
 
@@ -68,8 +68,10 @@ resource "azurerm_subnet" "this" {
 }
 
 resource "azurerm_application_security_group" "this" {
+  count = 3
+
   location            = azurerm_resource_group.this.location
-  name                = "example"
+  name                = "example-${count.index}"
   resource_group_name = azurerm_resource_group.this.name
 }
 
@@ -83,18 +85,14 @@ module "test" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
+    "example" = {
       name                          = "internal"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
     }
   }
 
-  application_security_group_association = {
-    "example" = {
-      application_security_group_id = azurerm_application_security_group.this.id
-    }
-  }
+  application_security_group_ids = azurerm_application_security_group.this.*.id
 }
 ```
 

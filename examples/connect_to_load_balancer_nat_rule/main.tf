@@ -79,7 +79,7 @@ resource "azurerm_lb" "this" {
   }
 }
 
-resource "azurerm_lb_nat_rule" "this" {
+resource "azurerm_lb_nat_rule" "rdp" {
   backend_port                   = 3389
   frontend_ip_configuration_name = "primary"
   loadbalancer_id                = azurerm_lb.this.id
@@ -89,27 +89,47 @@ resource "azurerm_lb_nat_rule" "this" {
   frontend_port                  = 3389
 }
 
+resource "azurerm_lb_nat_rule" "ssh" {
+  backend_port                   = 22
+  frontend_ip_configuration_name = "primary"
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "SSHAccess"
+  protocol                       = "Tcp"
+  resource_group_name            = azurerm_resource_group.this.name
+  frontend_port                  = 22
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "test" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true
 
   ip_configurations = {
     "ipconfig1" = {
-      name                          = "internal"
+      name                          = "rdp"
+      subnet_id                     = azurerm_subnet.this.id
+      private_ip_address_allocation = "Dynamic"
+      primary                       = "true"
+    }
+    "ipconfig2" = {
+      name                          = "ssh"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
     }
   }
 
   nat_rule_association = {
-    "example" = {
-      nat_rule_id           = azurerm_lb_nat_rule.this.id
-      ip_configuration_name = "internal"
+    "association1" = {
+      nat_rule_id           = azurerm_lb_nat_rule.rdp.id
+      ip_configuration_name = "rdp"
+    }
+    "association2" = {
+      nat_rule_id           = azurerm_lb_nat_rule.ssh.id
+      ip_configuration_name = "ssh"
     }
   }
 }

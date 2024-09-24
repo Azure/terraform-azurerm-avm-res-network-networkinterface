@@ -56,12 +56,12 @@ resource "azurerm_network_interface_application_gateway_backend_address_pool_ass
 resource "azurerm_network_interface_application_security_group_association" "this" {
   count = var.application_security_group_ids != null ? 1 : 0
 
-  network_interface_id          = azurerm_network_interface.this.id
   application_security_group_id = var.application_security_group_ids[count.index]
+  network_interface_id          = azurerm_network_interface.this.id
 }
 
 resource "azurerm_network_interface_nat_rule_association" "this" {
-  for_each = { for key, value in var.nat_rule_association : key => value if length(value.nat_rule_id) > 0 }
+  for_each = var.nat_rule_association != null ? var.nat_rule_association : {}
 
   ip_configuration_name = each.value.ip_configuration_name
   nat_rule_id           = each.value.nat_rule_id
@@ -71,6 +71,6 @@ resource "azurerm_network_interface_nat_rule_association" "this" {
 resource "azurerm_network_interface_security_group_association" "this" {
   count = var.network_security_group_ids != null ? 1 : 0
 
-  network_interface_id          = azurerm_network_interface.this.id
+  network_interface_id      = azurerm_network_interface.this.id
   network_security_group_id = var.network_security_group_ids[count.index]
 }

@@ -54,7 +54,8 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  count                = 2
+  count = 2
+
   address_prefixes     = ["10.0.${count.index + 1}.0/24"]
   name                 = "example_${count.index + 1}"
   resource_group_name  = azurerm_resource_group.this.name
@@ -148,7 +149,7 @@ resource "azurerm_application_gateway" "this" {
 module "test" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true

@@ -90,11 +90,7 @@ module "test" {
     }
   }
 
-  network_security_group_association = {
-    "example" = {
-      network_security_group_id = azurerm_network_security_group.this.id
-    }
-  }
+  network_security_group_association = azurerm_network_security_group.this.*.id
 }
 ```
 

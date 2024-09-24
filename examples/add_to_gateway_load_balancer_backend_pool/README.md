@@ -78,16 +78,46 @@ resource "azurerm_lb" "this" {
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Gateway"
 
   frontend_ip_configuration {
-    name                 = "primary"
-    public_ip_address_id = azurerm_public_ip.this.id
+    name                          = "example"
+    private_ip_address_allocation = "Dynamic"
+    private_ip_address_version    = "IPv4"
+    subnet_id                     = azurerm_subnet.this.id
   }
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
   loadbalancer_id = azurerm_lb.this.id
   name            = "example"
+
+  tunnel_interface {
+    identifier = 901
+    port       = 10801
+    protocol   = "VXLAN"
+    type       = "External"
+  }
+}
+
+resource "azurerm_lb_probe" "this" {
+  loadbalancer_id     = azurerm_lb.this.id
+  name                = "example"
+  port                = 80
+  interval_in_seconds = 5
+  probe_threshold     = 2
+  protocol            = "Http"
+  request_path        = "/"
+}
+
+resource "azurerm_lb_rule" "this" {
+  backend_port                   = 0
+  frontend_ip_configuration_name = "example"
+  frontend_port                  = 0
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "example"
+  protocol                       = "All"
+  probe_id                       = azurerm_lb_probe.this.id
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
@@ -100,11 +130,12 @@ module "test" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
+    "example" = {
       name                                               = "internal"
       subnet_id                                          = azurerm_subnet.this.id
       private_ip_address_allocation                      = "Dynamic"
-      gateway_load_balancer_frontend_ip_configuration_id = "azurerm_lb.this.frontend_ip_configuration[0].id"
+      public_ip_address_id                               = azurerm_public_ip.this.id
+      gateway_load_balancer_frontend_ip_configuration_id = azurerm_lb.this.frontend_ip_configuration[0].id
     }
   }
 }
@@ -127,6 +158,8 @@ The following resources are used by this module:
 
 - [azurerm_lb.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) (resource)
 - [azurerm_lb_backend_address_pool.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) (resource)
+- [azurerm_lb_probe.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe) (resource)
+- [azurerm_lb_rule.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) (resource)
 - [azurerm_public_ip.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_subnet.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)

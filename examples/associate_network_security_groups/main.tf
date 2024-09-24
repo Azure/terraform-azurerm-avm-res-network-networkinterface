@@ -71,7 +71,7 @@ resource "azurerm_network_security_group" "this" {
 module "test" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true
@@ -84,5 +84,5 @@ module "test" {
     }
   }
 
-  network_security_group_association = azurerm_network_security_group.this.*.id
+  network_security_group_ids = azurerm_network_security_group.this.*.id
 }

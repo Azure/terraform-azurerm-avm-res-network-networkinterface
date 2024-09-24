@@ -76,41 +76,41 @@ resource "azurerm_lb" "this" {
 
   frontend_ip_configuration {
     name                          = "example"
-    subnet_id                     = azurerm_subnet.this.id
     private_ip_address_allocation = "Dynamic"
     private_ip_address_version    = "IPv4"
+    subnet_id                     = azurerm_subnet.this.id
   }
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
-  name            = "example"
   loadbalancer_id = azurerm_lb.this.id
+  name            = "example"
 
   tunnel_interface {
     identifier = 901
-    type       = "External"
-    protocol   = "VXLAN"
     port       = 10801
+    protocol   = "VXLAN"
+    type       = "External"
   }
 }
 
 resource "azurerm_lb_probe" "this" {
-  name                = "example"
   loadbalancer_id     = azurerm_lb.this.id
-  protocol            = "Http"
+  name                = "example"
   port                = 80
-  request_path        = "/"
   interval_in_seconds = 5
   probe_threshold     = 2
+  protocol            = "Http"
+  request_path        = "/"
 }
 
 resource "azurerm_lb_rule" "this" {
+  backend_port                   = 0
+  frontend_ip_configuration_name = "example"
+  frontend_port                  = 0
   loadbalancer_id                = azurerm_lb.this.id
   name                           = "example"
   protocol                       = "All"
-  frontend_port                  = 0
-  backend_port                   = 0
-  frontend_ip_configuration_name = "example"
   probe_id                       = azurerm_lb_probe.this.id
 }
 
@@ -118,7 +118,7 @@ resource "azurerm_lb_rule" "this" {
 module "test" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true

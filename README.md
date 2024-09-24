@@ -104,36 +104,28 @@ Default: `false`
 
 ### <a name="input_application_gateway_backend_address_pool_association"></a> [application\_gateway\_backend\_address\_pool\_association](#input\_application\_gateway\_backend\_address\_pool\_association)
 
-Description: A map describing the application gateway to associate with the resource. This includes the following properties:
+Description: An object describing the application gateway to associate with the resource. This includes the following properties:
 - `application_gateway_backend_address_pool_id` - The resource ID of the application gateway backend address pool.
 - `ip_configuration_name` - The name of the network interface IP configuration.
 
 Type:
 
 ```hcl
-map(object({
-    application_gateway_backend_address_pool_id = list(string)
+object({
+    application_gateway_backend_address_pool_id = string
     ip_configuration_name                       = string
-  }))
+  })
 ```
 
-Default: `{}`
+Default: `null`
 
-### <a name="input_application_security_group_association"></a> [application\_security\_group\_association](#input\_application\_security\_group\_association)
+### <a name="input_application_security_group_ids"></a> [application\_security\_group\_ids](#input\_application\_security\_group\_ids)
 
-Description: A map describing the application security group to associate with the resource. This includes the following properties:
-- `application_security_group_id` - The resource ID of the application security group.
-- `ip_configuration_name` - The name of the network interface IP configuration.
+Description: (Optional) List of application security group IDs.
 
-Type:
+Type: `list(string)`
 
-```hcl
-map(object({
-    application_security_group_id = list(string)
-  }))
-```
-
-Default: `{}`
+Default: `null`
 
 ### <a name="input_auxiliary_mode"></a> [auxiliary\_mode](#input\_auxiliary\_mode)
 
@@ -195,7 +187,7 @@ Default: `false`
 
 ### <a name="input_load_balancer_backend_address_pool_association"></a> [load\_balancer\_backend\_address\_pool\_association](#input\_load\_balancer\_backend\_address\_pool\_association)
 
-Description: (Optional) A map describing the load balancer to associate with the resource. This includes the following properties:
+Description: A map of object describing the load balancer to associate with the resource. This includes the following properties:
 - `load_balancer_backend_address_pool_id` - The resource ID of the load balancer backend address pool.
 - `ip_configuration_name` - The name of the network interface IP configuration.
 
@@ -203,12 +195,12 @@ Type:
 
 ```hcl
 map(object({
-    load_balancer_backend_address_pool_id = list(string)
+    load_balancer_backend_address_pool_id = string
     ip_configuration_name                 = string
   }))
 ```
 
-Default: `{}`
+Default: `null`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
@@ -245,21 +237,13 @@ map(object({
 
 Default: `{}`
 
-### <a name="input_network_security_group_association"></a> [network\_security\_group\_association](#input\_network\_security\_group\_association)
+### <a name="input_network_security_group_ids"></a> [network\_security\_group\_ids](#input\_network\_security\_group\_ids)
 
-Description: A map describing the network security group to associate with the resource. This includes the following properties:
-- `network_security_group_id` - The resource ID of the network security group.
-- `ip_configuration_name` - The name of the network interface IP configuration.
+Description: (Optional) List of network security group IDs.
 
-Type:
+Type: `list(string)`
 
-```hcl
-map(object({
-    network_security_group_id = list(string)
-  }))
-```
-
-Default: `{}`
+Default: `null`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
@@ -284,10 +268,6 @@ Description: This is the full output for the resource.
 ### <a name="output_resource_group_name"></a> [resource\_group\_name](#output\_resource\_group\_name)
 
 Description: The name of the resource group.
-
-### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
-
-Description: This is the full output for the resource.
 
 ## Modules
 
