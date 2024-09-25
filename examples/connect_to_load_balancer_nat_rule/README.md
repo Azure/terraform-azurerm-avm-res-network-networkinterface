@@ -85,7 +85,7 @@ resource "azurerm_lb" "this" {
   }
 }
 
-resource "azurerm_lb_nat_rule" "this" {
+resource "azurerm_lb_nat_rule" "rdp" {
   backend_port                   = 3389
   frontend_ip_configuration_name = "primary"
   loadbalancer_id                = azurerm_lb.this.id
@@ -95,27 +95,47 @@ resource "azurerm_lb_nat_rule" "this" {
   frontend_port                  = 3389
 }
 
+resource "azurerm_lb_nat_rule" "ssh" {
+  backend_port                   = 22
+  frontend_ip_configuration_name = "primary"
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "SSHAccess"
+  protocol                       = "Tcp"
+  resource_group_name            = azurerm_resource_group.this.name
+  frontend_port                  = 22
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
-module "test" {
+module "nic" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
-  name                = module.naming.managed_disk.name_unique
+  name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
 
   enable_telemetry = true
 
   ip_configurations = {
     "ipconfig1" = {
-      name                          = "internal"
+      name                          = "rdp"
+      subnet_id                     = azurerm_subnet.this.id
+      private_ip_address_allocation = "Dynamic"
+      primary                       = "true"
+    }
+    "ipconfig2" = {
+      name                          = "ssh"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
     }
   }
 
   nat_rule_association = {
-    "example" = {
-      nat_rule_id           = azurerm_lb_nat_rule.this.id
-      ip_configuration_name = "internal"
+    "association1" = {
+      nat_rule_id           = azurerm_lb_nat_rule.rdp.id
+      ip_configuration_name = "rdp"
+    }
+    "association2" = {
+      nat_rule_id           = azurerm_lb_nat_rule.ssh.id
+      ip_configuration_name = "ssh"
     }
   }
 }
@@ -137,7 +157,8 @@ The following requirements are needed by this module:
 The following resources are used by this module:
 
 - [azurerm_lb.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) (resource)
-- [azurerm_lb_nat_rule.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_nat_rule) (resource)
+- [azurerm_lb_nat_rule.rdp](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_nat_rule) (resource)
+- [azurerm_lb_nat_rule.ssh](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_nat_rule) (resource)
 - [azurerm_public_ip.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_subnet.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
@@ -167,17 +188,17 @@ Source: Azure/naming/azurerm
 
 Version: ~> 0.3
 
+### <a name="module_nic"></a> [nic](#module\_nic)
+
+Source: ../../
+
+Version:
+
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
 Source: Azure/regions/azurerm
 
 Version: ~> 0.3
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 ## Usage
 

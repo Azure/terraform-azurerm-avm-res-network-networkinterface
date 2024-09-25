@@ -10,6 +10,11 @@ output "resource" {
   value       = azurerm_network_interface.this
 }
 
+output "resource_id" {
+  description = "This id of the resource."
+  value       = azurerm_network_interface.this.id
+}
+
 output "resource_group_name" {
   description = "The name of the resource group."
   value       = var.resource_group_name

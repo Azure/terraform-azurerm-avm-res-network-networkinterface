@@ -222,7 +222,7 @@ Default: `null`
 
 ### <a name="input_nat_rule_association"></a> [nat\_rule\_association](#input\_nat\_rule\_association)
 
-Description: A map describing the NAT  gateway to associate with the resource. This includes the following properties:
+Description: A map describing the NAT rule to associate with the resource. This includes the following properties:
 - `nat_rule_id` - The resource ID of the NAT rule.
 - `ip_configuration_name` - The name of the network interface IP configuration.
 
@@ -230,7 +230,7 @@ Type:
 
 ```hcl
 map(object({
-    nat_rule_id           = list(string)
+    nat_rule_id           = string
     ip_configuration_name = string
   }))
 ```

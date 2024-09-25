@@ -71,20 +71,22 @@ module "naming" {
 
 # This is required for resource modules
 resource "azurerm_resource_group" "this" {
-  location = module.regions.regions[random_integer.region_index.result].name
+  location = "westus"
   name     = module.naming.resource_group.name_unique
 }
 
 resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.0.0.0/16", "2001:db8:abcd::/56"]
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
 }
 
 resource "azurerm_subnet" "this" {
-  address_prefixes     = ["10.0.1.0/24"]
-  name                 = "example"
+  count = 2
+
+  address_prefixes     = ["10.0.${count.index + 1}.0/24", "2001:db8:abcd:001${count.index + 2}::/64"]
+  name                 = "example-${count.index + 1}"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
 }
@@ -129,7 +131,7 @@ resource "azurerm_application_gateway" "this" {
   }
   gateway_ip_configuration {
     name      = "example"
-    subnet_id = azurerm_subnet.this.id
+    subnet_id = azurerm_subnet.this[0].id
   }
   http_listener {
     frontend_ip_configuration_name = "${local.example["application_gateway"].name}-frontend-ip"
@@ -141,7 +143,7 @@ resource "azurerm_application_gateway" "this" {
     http_listener_name         = "${local.example["application_gateway"].name}-listener-http"
     name                       = "${local.example["application_gateway"].name}-rule"
     rule_type                  = "Basic"
-    backend_address_pool_name  = "${local.example["application_gateway"].name}-backend-http"
+    backend_address_pool_name  = "${local.example["application_gateway"].name}-backend-pool"
     backend_http_settings_name = "${local.example["application_gateway"].name}-backend-http"
     priority                   = 25
   }
@@ -162,33 +164,74 @@ resource "azurerm_lb" "this" {
   for_each = local.load_balancers
 
   location            = azurerm_resource_group.this.location
-  name                = each.value.name
+  name                = each.value.sku
   resource_group_name = azurerm_resource_group.this.name
   sku                 = each.value.sku
 
   frontend_ip_configuration {
-    name                 = "${each.key}-frontendip"
-    public_ip_address_id = azurerm_public_ip.this[each.key].id
+    name                          = "${each.key}-frontendip"
+    private_ip_address_allocation = "Dynamic"
+    private_ip_address_version    = "IPv4"
+    subnet_id                     = azurerm_subnet.this[1].id
   }
 }
 
-resource "azurerm_lb_backend_address_pool" "this" {
-  for_each = local.load_balancers
+resource "azurerm_lb_backend_address_pool" "standard" {
+  loadbalancer_id = azurerm_lb.this["standard_load_balancer"].id
+  name            = "example-standard-backend"
+}
 
-  loadbalancer_id = azurerm_lb.this[each.key].id
-  name            = "${each.key}-backend"
+resource "azurerm_lb_backend_address_pool" "gateway" {
+  loadbalancer_id = azurerm_lb.this["gateway_load_balancer"].id
+  name            = "example-gateway-backend"
+
+  tunnel_interface {
+    identifier = 901
+    port       = 10801
+    protocol   = "VXLAN"
+    type       = "External"
+  }
+}
+
+resource "azurerm_lb_probe" "this" {
+  loadbalancer_id     = azurerm_lb.this["gateway_load_balancer"].id
+  name                = "example"
+  port                = 80
+  interval_in_seconds = 5
+  probe_threshold     = 2
+  protocol            = "Http"
+  request_path        = "/"
+}
+
+resource "azurerm_lb_rule" "this" {
+  backend_port                   = 0
+  frontend_ip_configuration_name = azurerm_lb.this["gateway_load_balancer"].frontend_ip_configuration[0].name
+  frontend_port                  = 0
+  loadbalancer_id                = azurerm_lb.this["gateway_load_balancer"].id
+  name                           = "example"
+  protocol                       = "All"
+  probe_id                       = azurerm_lb_probe.this.id
+}
+
+resource "azurerm_lb_nat_rule" "rdp" {
+  backend_port                   = 3389
+  frontend_ip_configuration_name = azurerm_lb.this["standard_load_balancer"].frontend_ip_configuration[0].name
+  loadbalancer_id                = azurerm_lb.this["standard_load_balancer"].id
+  name                           = "RDPAccess"
+  protocol                       = "Tcp"
+  resource_group_name            = azurerm_resource_group.this.name
+  frontend_port                  = 3389
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
-module "test" {
+module "nic" {
   source                         = "../../"
   location                       = azurerm_resource_group.this.location
-  name                           = module.naming.managed_disk.name_unique
+  name                           = module.naming.network_interface.name_unique
   resource_group_name            = azurerm_resource_group.this.name
   auxiliary_mode                 = "AcceleratedConnections"
   auxiliary_sku                  = "A8"
-  dns_servers                    = ["10.0.0.5", "10.0.0.6", "10.0.0.7"]
-  edge_zone                      = "Los Angeles"
+  dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
   ip_forwarding_enabled          = true
   accelerated_networking_enabled = true
   internal_dns_name_label        = "example.local"
@@ -199,7 +242,7 @@ module "test" {
     "ipconfig1" = {
       name                                               = "external"
       primary                                            = true
-      subnet_id                                          = azurerm_subnet.this.id
+      subnet_id                                          = azurerm_subnet.this[1].id
       private_ip_address_allocation                      = "Dynamic"
       gateway_load_balancer_frontend_ip_configuration_id = azurerm_lb.this["gateway_load_balancer"].frontend_ip_configuration[0].id
       private_ip_address_version                         = "IPv4"
@@ -207,11 +250,34 @@ module "test" {
     }
     "ipconfig2" = {
       name                          = "internal"
-      subnet_id                     = azurerm_subnet.this.id
+      subnet_id                     = azurerm_subnet.this[1].id
       private_ip_address_allocation = "Dynamic"
       private_ip_address_version    = "IPv4"
     }
   }
+
+  application_gateway_backend_address_pool_association = {
+    application_gateway_backend_address_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "${local.example["application_gateway"].name}-backend-pool", null)
+    ip_configuration_name                       = "external"
+  }
+
+  application_security_group_ids = azurerm_application_security_group.this.*.id
+
+  load_balancer_backend_address_pool_association = {
+    "association1" = {
+      load_balancer_backend_address_pool_id = azurerm_lb_backend_address_pool.standard.id
+      ip_configuration_name                 = "external"
+    }
+  }
+
+  nat_rule_association = {
+    "association1" = {
+      nat_rule_id           = azurerm_lb_nat_rule.rdp.id
+      ip_configuration_name = "rdp"
+    }
+  }
+
+  network_security_group_ids = azurerm_network_security_group.this.*.id
 
   tags = {
     environment = "example"
@@ -237,7 +303,11 @@ The following resources are used by this module:
 - [azurerm_application_gateway.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway) (resource)
 - [azurerm_application_security_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_security_group) (resource)
 - [azurerm_lb.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) (resource)
-- [azurerm_lb_backend_address_pool.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) (resource)
+- [azurerm_lb_backend_address_pool.gateway](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) (resource)
+- [azurerm_lb_backend_address_pool.standard](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) (resource)
+- [azurerm_lb_nat_rule.rdp](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_nat_rule) (resource)
+- [azurerm_lb_probe.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe) (resource)
+- [azurerm_lb_rule.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) (resource)
 - [azurerm_network_security_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
 - [azurerm_public_ip.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
@@ -268,17 +338,17 @@ Source: Azure/naming/azurerm
 
 Version: ~> 0.3
 
+### <a name="module_nic"></a> [nic](#module\_nic)
+
+Source: ../../
+
+Version:
+
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
 Source: Azure/regions/azurerm
 
 Version: ~> 0.3
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 ## Usage
 

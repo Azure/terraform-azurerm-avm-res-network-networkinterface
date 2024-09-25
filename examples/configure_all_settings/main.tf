@@ -78,6 +78,7 @@ resource "azurerm_virtual_network" "this" {
 
 resource "azurerm_subnet" "this" {
   count = 2
+
   address_prefixes     = ["10.0.${count.index + 1}.0/24", "2001:db8:abcd:001${count.index + 2}::/64"]
   name                 = "example-${count.index + 1}"
   resource_group_name  = azurerm_resource_group.this.name
@@ -162,7 +163,7 @@ resource "azurerm_lb" "this" {
   sku                 = each.value.sku
 
   frontend_ip_configuration {
-    name                 = "${each.key}-frontendip"
+    name                          = "${each.key}-frontendip"
     private_ip_address_allocation = "Dynamic"
     private_ip_address_version    = "IPv4"
     subnet_id                     = azurerm_subnet.this[1].id
@@ -217,7 +218,7 @@ resource "azurerm_lb_nat_rule" "rdp" {
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
-module "test" {
+module "nic" {
   source                         = "../../"
   location                       = azurerm_resource_group.this.location
   name                           = module.naming.network_interface.name_unique
@@ -225,7 +226,6 @@ module "test" {
   auxiliary_mode                 = "AcceleratedConnections"
   auxiliary_sku                  = "A8"
   dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
-  edge_zone                      = "Los Angeles"
   ip_forwarding_enabled          = true
   accelerated_networking_enabled = true
   internal_dns_name_label        = "example.local"

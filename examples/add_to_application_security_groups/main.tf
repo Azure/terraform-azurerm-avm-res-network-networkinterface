@@ -70,7 +70,7 @@ resource "azurerm_application_security_group" "this" {
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
-module "test" {
+module "nic" {
   source              = "../../"
   location            = azurerm_resource_group.this.location
   name                = module.naming.network_interface.name_unique
@@ -86,5 +86,5 @@ module "test" {
     }
   }
 
-  application_security_group_ids = azurerm_application_security_group.this.*.id
+  application_security_group_ids = [azurerm_application_security_group.this.*.id]
 }
