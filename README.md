@@ -269,6 +269,10 @@ Description: This is the full output for the resource.
 
 Description: The name of the resource group.
 
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
+
+Description: This id of the resource.
+
 ## Modules
 
 No modules.

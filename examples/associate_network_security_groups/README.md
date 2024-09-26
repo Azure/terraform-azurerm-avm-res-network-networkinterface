@@ -90,7 +90,7 @@ module "nic" {
     }
   }
 
-  network_security_group_ids = azurerm_network_security_group.this.*.id
+  network_security_group_ids = [azurerm_network_security_group.this.*.id]
 }
 ```
 
