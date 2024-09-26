@@ -62,8 +62,10 @@ resource "azurerm_subnet" "this" {
 }
 
 resource "azurerm_network_security_group" "this" {
+  count = 3
+
   location            = azurerm_resource_group.this.location
-  name                = "example"
+  name                = "example-${count.index}"
   resource_group_name = azurerm_resource_group.this.name
 }
 
@@ -84,5 +86,5 @@ module "nic" {
     }
   }
 
-  network_security_group_ids = [azurerm_network_security_group.this.*.id]
+  network_security_group_ids = azurerm_network_security_group.this[*].id
 }

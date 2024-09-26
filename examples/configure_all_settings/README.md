@@ -261,7 +261,7 @@ module "nic" {
     ip_configuration_name                       = "external"
   }
 
-  application_security_group_ids = azurerm_application_security_group.this.*.id
+  application_security_group_ids = azurerm_application_security_group.this[*].id
 
   load_balancer_backend_address_pool_association = {
     "association1" = {
@@ -277,7 +277,7 @@ module "nic" {
     }
   }
 
-  network_security_group_ids = azurerm_network_security_group.this.*.id
+  network_security_group_ids = azurerm_network_security_group.this[*].id
 
   tags = {
     environment = "example"

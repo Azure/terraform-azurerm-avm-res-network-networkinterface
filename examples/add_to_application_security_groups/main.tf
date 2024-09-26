@@ -86,5 +86,5 @@ module "nic" {
     }
   }
 
-  application_security_group_ids = [azurerm_application_security_group.this.*.id]
+  application_security_group_ids = azurerm_application_security_group.this[*].id
 }
