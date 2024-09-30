@@ -20,6 +20,7 @@ provider "azurerm" {
   }
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -60,6 +61,44 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = azurerm_virtual_network.this.name
 }
 
+resource "azurerm_public_ip" "this" {
+  allocation_method   = "Static"
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_lb" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+
+  frontend_ip_configuration {
+    name                 = "primary"
+    public_ip_address_id = azurerm_public_ip.this.id
+  }
+}
+
+resource "azurerm_lb_nat_rule" "rdp" {
+  backend_port                   = 3389
+  frontend_ip_configuration_name = "primary"
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "RDPAccess"
+  protocol                       = "Tcp"
+  resource_group_name            = azurerm_resource_group.this.name
+  frontend_port                  = 3389
+}
+
+resource "azurerm_lb_nat_rule" "ssh" {
+  backend_port                   = 22
+  frontend_ip_configuration_name = "primary"
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "SSHAccess"
+  protocol                       = "Tcp"
+  resource_group_name            = azurerm_resource_group.this.name
+  frontend_port                  = 22
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
   source              = "../../"
@@ -71,9 +110,26 @@ module "nic" {
 
   ip_configurations = {
     "ipconfig1" = {
-      name                          = "internal"
+      name                          = "rdp"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
+      primary                       = "true"
+    }
+    "ipconfig2" = {
+      name                          = "ssh"
+      subnet_id                     = azurerm_subnet.this.id
+      private_ip_address_allocation = "Dynamic"
+    }
+  }
+
+  nat_rule_association = {
+    "association1" = {
+      nat_rule_id           = azurerm_lb_nat_rule.rdp.id
+      ip_configuration_name = "rdp"
+    }
+    "association2" = {
+      nat_rule_id           = azurerm_lb_nat_rule.ssh.id
+      ip_configuration_name = "ssh"
     }
   }
 }

@@ -20,6 +20,7 @@ provider "azurerm" {
   }
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -60,6 +61,31 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = azurerm_virtual_network.this.name
 }
 
+resource "azurerm_public_ip" "this" {
+  allocation_method   = "Static"
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_lb" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+
+  frontend_ip_configuration {
+    name                 = "primary"
+    public_ip_address_id = azurerm_public_ip.this.id
+  }
+}
+
+resource "azurerm_lb_backend_address_pool" "this" {
+  count = 2
+
+  loadbalancer_id = azurerm_lb.this.id
+  name            = "example-${count.index}"
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
   source              = "../../"
@@ -74,6 +100,23 @@ module "nic" {
       name                          = "internal"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
+      primary                       = "true"
+    }
+    "ipconfig2" = {
+      name                          = "external"
+      subnet_id                     = azurerm_subnet.this.id
+      private_ip_address_allocation = "Dynamic"
+    }
+  }
+
+  load_balancer_backend_address_pool_association = {
+    "association1" = {
+      load_balancer_backend_address_pool_id = azurerm_lb_backend_address_pool.this[0].id
+      ip_configuration_name                 = "internal"
+    }
+    "association2" = {
+      load_balancer_backend_address_pool_id = azurerm_lb_backend_address_pool.this[1].id
+      ip_configuration_name                 = "external"
     }
   }
 }
