@@ -226,7 +226,7 @@ module "nic" {
   dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
   ip_forwarding_enabled          = true
   accelerated_networking_enabled = true
-  internal_dns_name_label        = "example.local"
+  internal_dns_name_label        = "myinternaldnsnamelabel"
 
   enable_telemetry = true
 

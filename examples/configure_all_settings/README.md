@@ -229,12 +229,10 @@ module "nic" {
   location                       = azurerm_resource_group.this.location
   name                           = module.naming.network_interface.name_unique
   resource_group_name            = azurerm_resource_group.this.name
-  auxiliary_mode                 = "AcceleratedConnections"
-  auxiliary_sku                  = "A8"
   dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
   ip_forwarding_enabled          = true
   accelerated_networking_enabled = true
-  internal_dns_name_label        = "example.local"
+  internal_dns_name_label        = "myinternaldnsnamelabel"
 
   enable_telemetry = true
 
