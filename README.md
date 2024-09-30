@@ -44,7 +44,6 @@ module "avm-res-network-interface" {
   }
 }
 ```
-
 <!-- markdownlint-disable MD033 -->
 ## Requirements
 
@@ -93,7 +92,7 @@ map(object({
     private_ip_address_version                         = optional(string, "IPv4")
     private_ip_address_allocation                      = optional(string, "Dynamic")
     public_ip_address_id                               = optional(string, null)
-    primary                                            = optional(bool, false)
+    primary                                            = optional(bool, null)
     private_ip_address                                 = optional(string, null)
   }))
 ```

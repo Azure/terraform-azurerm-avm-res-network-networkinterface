@@ -6,7 +6,7 @@ variable "ip_configurations" {
     private_ip_address_version                         = optional(string, "IPv4")
     private_ip_address_allocation                      = optional(string, "Dynamic")
     public_ip_address_id                               = optional(string, null)
-    primary                                            = optional(bool, false)
+    primary                                            = optional(bool, null)
     private_ip_address                                 = optional(string, null)
   }))
   description = "A map of ip configurations for the network interface. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time."
@@ -21,7 +21,7 @@ variable "ip_configurations" {
   }
   validation {
     condition     = length(var.ip_configurations) <= 1 || anytrue([for ip in var.ip_configurations : ip.primary])
-    error_message = "When there is more than one IP configuration, at least one must have 'primary' set to true."
+    error_message = "At least one ip configuration must have 'primary' set to true."
   }
 }
 
@@ -81,27 +81,28 @@ variable "application_security_group_ids" {
   description = "(Optional) List of application security group IDs."
 }
 
-variable "auxiliary_mode" {
-  type        = string
-  default     = "None"
-  description = "(Optional) Specifies the auxiliary mode used to enable network high-performance feature on Network Virtual Appliances (NVAs). Possible values are AcceleratedConnections, Floating, MaxConnections and None."
+# Settings in preview are disabled for stability
+# variable "auxiliary_mode" {
+#   type        = string
+#   default     = "None"
+#   description = "(Optional) Specifies the auxiliary mode used to enable network high-performance feature on Network Virtual Appliances (NVAs). Possible values are AcceleratedConnections, Floating, MaxConnections and None."
 
-  validation {
-    condition     = contains(["AcceleratedConnections", "Floating", "MaxConnections", "None"], var.auxiliary_mode)
-    error_message = "The auxiliary_mode must be one of 'AcceleratedConnections', 'Floating', 'MaxConnections', or 'None'."
-  }
-}
+#   validation {
+#     condition     = contains(["AcceleratedConnections", "Floating", "MaxConnections", "None"], var.auxiliary_mode)
+#     error_message = "The auxiliary_mode must be one of 'AcceleratedConnections', 'Floating', 'MaxConnections', or 'None'."
+#   }
+# }
 
-variable "auxiliary_sku" {
-  type        = string
-  default     = "None"
-  description = "(Optional) Specifies the SKU used for the network high-performance feature on Network Virtual Appliances (NVAs)."
+# variable "auxiliary_sku" {
+#   type        = string
+#   default     = "None"
+#   description = "(Optional) Specifies the SKU used for the network high-performance feature on Network Virtual Appliances (NVAs)."
 
-  validation {
-    condition     = contains(["A8", "A4", "A1", "A2", "None"], var.auxiliary_sku)
-    error_message = "The auxiliary_mode must be one of 'A8', 'A4', 'A1', 'A2' or 'None'."
-  }
-}
+#   validation {
+#     condition     = contains(["A8", "A4", "A1", "A2", "None"], var.auxiliary_sku)
+#     error_message = "The auxiliary_mode must be one of 'A8', 'A4', 'A1', 'A2' or 'None'."
+#   }
+# }
 
 variable "dns_servers" {
   type        = list(string)
