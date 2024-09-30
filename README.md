@@ -1,49 +1,23 @@
 <!-- BEGIN_TF_DOCS -->
-# Azure Network Interface Module
+# terraform-azurerm-avm-template
 
-This module is designed to deploy and manage Azure Network Interfaces. It allows for the creation of network interfaces and their association with various Azure resources, such as subnets, network security groups, public IP addresses, and more.
+This is a template repo for Terraform Azure Verified Modules.
 
-## Features
+Things to do:
 
-This module supports managing network interfaces and their associated resources. It includes capabilities for:
+1. Set up a GitHub repo environment called `test`.
+1. Configure environment protection rule to ensure that approval is required before deploying to this environment.
+1. Create a user-assigned managed identity in your test subscription.
+1. Create a role assignment for the managed identity on your test subscription, use the minimum required role.
+1. Configure federated identity credentials on the user assigned managed identity. Use the GitHub environment.
+1. Search and update TODOs within the code and remove the TODO comments once complete.
 
-- Creating a new network interface
-- Adding IP configurations to a network interface
-- Associating a network security group with a network interface
-- Assigning public IP addresses to a network interface
-- Configuring DNS settings for a network interface
-- Enabling accelerated networking on a network interface
-- Connecting a network interface to a NAT rule
-- Adding a network interface to a backend pool of an application gateway
-- Configuring IPv4 and IPv6 dual networking on a network interface
-- Adding a network interface to an application security group
-- Enabling IP forwarding on a network interface
-- Adding a network interface to a Gateway or Standard Load Balancer
-
-## Usage
-
-To use this module in your Terraform configuration, provide values for the required variables.
-
-### Example - Create a network interface on an existing subnet
-
-This example demonstrates the basic usage of the module to create a new network interface using an existing subnet.
-
-```terraform
-module "avm-res-network-interface" {
-  source = "Azure/avm-res-network-interface/azurerm"
-
-  location            = "East US"
-  name                = "myNIC"
-  resource_group_name = "myResourceGroup"
-  ip_configurations = {
-    "ipconfig1" = {
-      name      = "ipconfig1"
-      private_ip_address_allocation = "Dynamic"      
-      subnet_id = "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/myResourceGroup/providers/Microsoft.Network/virtualNetworks/myVNet/subnets/subnet1"
-    }  
-  }
-}
-```
+> [!IMPORTANT]
+> As the overall AVM framework is not GA (generally available) yet - the CI framework and test automation is not fully functional and implemented across all supported languages yet - breaking changes are expected, and additional customer feedback is yet to be gathered and incorporated. Hence, modules **MUST NOT** be published at version `1.0.0` or higher at this time.
+>
+> All module **MUST** be published as a pre-release version (e.g., `0.1.0`, `0.1.1`, `0.2.0`, etc.) until the AVM framework becomes GA.
+>
+> However, it is important to note that this **DOES NOT** mean that the modules cannot be consumed and utilized. They **CAN** be leveraged in all types of environments (dev, test, prod etc.). Consumers can treat them just like any other IaC module and raise issues or feature requests against them as they learn from the usage of the module. Consumers should also read the release notes for each version, if considering updating to a more recent version of a module to see if there are any considerations or breaking changes etc.
 
 <!-- markdownlint-disable MD033 -->
 ## Requirements

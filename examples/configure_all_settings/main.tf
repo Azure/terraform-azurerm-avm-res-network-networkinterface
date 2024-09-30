@@ -240,12 +240,6 @@ module "nic" {
       private_ip_address_version                         = "IPv4"
       public_ip_address_id                               = azurerm_public_ip.this["network_interface"].id
     }
-    "ipconfig2" = {
-      name                          = "internal"
-      subnet_id                     = azurerm_subnet.this[1].id
-      private_ip_address_allocation = "Dynamic"
-      private_ip_address_version    = "IPv4"
-    }
   }
 
   application_gateway_backend_address_pool_association = {
@@ -265,7 +259,7 @@ module "nic" {
   nat_rule_association = {
     "association1" = {
       nat_rule_id           = azurerm_lb_nat_rule.rdp.id
-      ip_configuration_name = "rdp"
+      ip_configuration_name = "external"
     }
   }
 
