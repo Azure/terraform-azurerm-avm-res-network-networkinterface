@@ -20,6 +20,7 @@ provider "azurerm" {
   }
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -60,6 +61,14 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = azurerm_virtual_network.this.name
 }
 
+resource "azurerm_network_security_group" "this" {
+  count = 3
+
+  location            = azurerm_resource_group.this.location
+  name                = "example-${count.index}"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
   source              = "../../"
@@ -76,4 +85,6 @@ module "nic" {
       private_ip_address_allocation = "Dynamic"
     }
   }
+
+  network_security_group_ids = azurerm_network_security_group.this[*].id
 }

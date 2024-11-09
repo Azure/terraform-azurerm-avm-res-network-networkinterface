@@ -1,3 +1,3 @@
-# Default example
+# Simple example for the network interface module
 
-This deploys the module in its simplest form.
+This example shows how to create and manage network interfaces using the minimal, default values from the module.

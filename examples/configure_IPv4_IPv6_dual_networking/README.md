@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Simple example for the network interface module
+# Configure a network interface with dual-stack network
 
-This example shows how to create and manage network interfaces using the minimal, default values from the module.
+This example shows how to create a network interface with a dual-stack network, supporting both IPv4 and IPv6 addresses.
 
 ```hcl
 terraform {
@@ -25,6 +25,7 @@ provider "azurerm" {
     }
   }
 }
+
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
@@ -53,14 +54,14 @@ resource "azurerm_resource_group" "this" {
 }
 
 resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16"]
+  address_space       = ["10.0.0.0/16", "fd00:db8:deca::/48"]
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
 }
 
 resource "azurerm_subnet" "this" {
-  address_prefixes     = ["10.0.1.0/24"]
+  address_prefixes     = ["10.0.0.0/24", "fd00:db8:deca:deed::/64"]
   name                 = "example"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
@@ -76,10 +77,18 @@ module "nic" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
-      name                          = "internal"
+    "dualstackIPv4config" = {
+      name                          = "dsIP4Config"
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Dynamic"
+      private_ip_address_version    = "IPv4"
+      primary                       = true
+    }
+    "dualstackIPv6config" = {
+      name                          = "dsIP6Config"
+      subnet_id                     = azurerm_subnet.this.id
+      private_ip_address_allocation = "Dynamic"
+      private_ip_address_version    = "IPv6"
     }
   }
 }

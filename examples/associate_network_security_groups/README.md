@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# Simple example for the network interface module
+# Associate a network interface to a network security group
 
-This example shows how to create and manage network interfaces using the minimal, default values from the module.
+This example shows how to create a network interface and associate it to a network security group.
 
 ```hcl
 terraform {
@@ -25,6 +25,7 @@ provider "azurerm" {
     }
   }
 }
+
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
@@ -66,6 +67,14 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = azurerm_virtual_network.this.name
 }
 
+resource "azurerm_network_security_group" "this" {
+  count = 3
+
+  location            = azurerm_resource_group.this.location
+  name                = "example-${count.index}"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
   source              = "../../"
@@ -82,6 +91,8 @@ module "nic" {
       private_ip_address_allocation = "Dynamic"
     }
   }
+
+  network_security_group_ids = azurerm_network_security_group.this[*].id
 }
 ```
 
@@ -100,6 +111,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
+- [azurerm_network_security_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_group) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
 - [azurerm_subnet.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
 - [azurerm_virtual_network.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)

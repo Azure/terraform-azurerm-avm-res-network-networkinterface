@@ -20,6 +20,7 @@ provider "azurerm" {
   }
 }
 
+
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -60,6 +61,59 @@ resource "azurerm_subnet" "this" {
   virtual_network_name = azurerm_virtual_network.this.name
 }
 
+resource "azurerm_public_ip" "this" {
+  allocation_method   = "Static"
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_lb" "this" {
+  location            = azurerm_resource_group.this.location
+  name                = "example"
+  resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Gateway"
+
+  frontend_ip_configuration {
+    name                          = "example"
+    private_ip_address_allocation = "Dynamic"
+    private_ip_address_version    = "IPv4"
+    subnet_id                     = azurerm_subnet.this.id
+  }
+}
+
+resource "azurerm_lb_backend_address_pool" "this" {
+  loadbalancer_id = azurerm_lb.this.id
+  name            = "example"
+
+  tunnel_interface {
+    identifier = 901
+    port       = 10801
+    protocol   = "VXLAN"
+    type       = "External"
+  }
+}
+
+resource "azurerm_lb_probe" "this" {
+  loadbalancer_id     = azurerm_lb.this.id
+  name                = "example"
+  port                = 80
+  interval_in_seconds = 5
+  probe_threshold     = 2
+  protocol            = "Http"
+  request_path        = "/"
+}
+
+resource "azurerm_lb_rule" "this" {
+  backend_port                   = 0
+  frontend_ip_configuration_name = "example"
+  frontend_port                  = 0
+  loadbalancer_id                = azurerm_lb.this.id
+  name                           = "example"
+  protocol                       = "All"
+  probe_id                       = azurerm_lb_probe.this.id
+}
+
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
   source              = "../../"
@@ -70,10 +124,12 @@ module "nic" {
   enable_telemetry = true
 
   ip_configurations = {
-    "ipconfig1" = {
-      name                          = "internal"
-      subnet_id                     = azurerm_subnet.this.id
-      private_ip_address_allocation = "Dynamic"
+    "example" = {
+      name                                               = "internal"
+      subnet_id                                          = azurerm_subnet.this.id
+      private_ip_address_allocation                      = "Dynamic"
+      public_ip_address_id                               = azurerm_public_ip.this.id
+      gateway_load_balancer_frontend_ip_configuration_id = azurerm_lb.this.frontend_ip_configuration[0].id
     }
   }
 }
