@@ -1,5 +1,6 @@
 terraform {
   required_version = "~> 1.9"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -47,10 +48,10 @@ resource "azurerm_resource_group" "this" {
 }
 
 resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  address_space       = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "this" {
@@ -147,12 +148,7 @@ resource "azurerm_application_gateway" "this" {
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
-  source              = "../../"
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.network_interface.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-
-  enable_telemetry = true
+  source = "../../"
 
   ip_configurations = {
     "example" = {
@@ -161,9 +157,12 @@ module "nic" {
       private_ip_address_allocation = "Dynamic"
     }
   }
-
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.network_interface.name_unique
+  resource_group_name = azurerm_resource_group.this.name
   application_gateway_backend_address_pool_association = {
     application_gateway_backend_address_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
     ip_configuration_name                       = "internal"
   }
+  enable_telemetry = true
 }

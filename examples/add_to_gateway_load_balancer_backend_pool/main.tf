@@ -1,5 +1,6 @@
 terraform {
   required_version = "~> 1.9"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -48,10 +49,10 @@ resource "azurerm_resource_group" "this" {
 }
 
 resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  address_space       = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "this" {
@@ -116,12 +117,7 @@ resource "azurerm_lb_rule" "this" {
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
-  source              = "../../"
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.network_interface.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-
-  enable_telemetry = true
+  source = "../../"
 
   ip_configurations = {
     "example" = {
@@ -132,4 +128,8 @@ module "nic" {
       gateway_load_balancer_frontend_ip_configuration_id = azurerm_lb.this.frontend_ip_configuration[0].id
     }
   }
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.network_interface.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  enable_telemetry    = true
 }
