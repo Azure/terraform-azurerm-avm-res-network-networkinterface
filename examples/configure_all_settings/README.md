@@ -29,6 +29,7 @@ locals {
 
 terraform {
   required_version = "~> 1.9"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -76,10 +77,10 @@ resource "azurerm_resource_group" "this" {
 }
 
 resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16", "2001:db8:abcd::/56"]
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  address_space       = ["10.0.0.0/16", "2001:db8:abcd::/56"]
 }
 
 resource "azurerm_subnet" "this" {
@@ -225,16 +226,7 @@ resource "azurerm_lb_nat_rule" "rdp" {
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
 module "nic" {
-  source                         = "../../"
-  location                       = azurerm_resource_group.this.location
-  name                           = module.naming.network_interface.name_unique
-  resource_group_name            = azurerm_resource_group.this.name
-  dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
-  ip_forwarding_enabled          = true
-  accelerated_networking_enabled = true
-  internal_dns_name_label        = "myinternaldnsnamelabel"
-
-  enable_telemetry = true
+  source = "../../"
 
   ip_configurations = {
     "ipconfig1" = {
@@ -247,30 +239,32 @@ module "nic" {
       public_ip_address_id                               = azurerm_public_ip.this["network_interface"].id
     }
   }
-
+  location                       = azurerm_resource_group.this.location
+  name                           = module.naming.network_interface.name_unique
+  resource_group_name            = azurerm_resource_group.this.name
+  accelerated_networking_enabled = true
   application_gateway_backend_address_pool_association = {
     application_gateway_backend_address_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "${local.example["application_gateway"].name}-backend-pool", null)
     ip_configuration_name                       = "external"
   }
-
   application_security_group_ids = azurerm_application_security_group.this[*].id
-
+  dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
+  enable_telemetry               = true
+  internal_dns_name_label        = "myinternaldnsnamelabel"
+  ip_forwarding_enabled          = true
   load_balancer_backend_address_pool_association = {
     "association1" = {
       load_balancer_backend_address_pool_id = azurerm_lb_backend_address_pool.standard.id
       ip_configuration_name                 = "external"
     }
   }
-
   nat_rule_association = {
     "association1" = {
       nat_rule_id           = azurerm_lb_nat_rule.rdp.id
       ip_configuration_name = "external"
     }
   }
-
   network_security_group_ids = azurerm_network_security_group.this[*].id
-
   tags = {
     environment = "example"
   }
