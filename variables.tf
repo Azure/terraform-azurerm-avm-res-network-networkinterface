@@ -36,7 +36,7 @@ variable "name" {
   description = "The name of the network interface."
 
   validation {
-    condition     = can(regex("^[a-zA-Z0-9-]{3,80}$", var.name))
+    condition     = can(regex("^[a-zA-Z0-9_.-]{3,80}$", var.name))
     error_message = "The name must be between 1 and 80 characters long and can only contain letters, numbers, underscores, periods, and dashes."
   }
   validation {
