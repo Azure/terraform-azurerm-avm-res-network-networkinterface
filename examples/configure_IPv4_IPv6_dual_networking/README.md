@@ -136,7 +136,7 @@ The following Modules are called:
 
 Source: Azure/naming/azurerm
 
-Version: ~> 0.3
+Version: 0.4.2
 
 ### <a name="module_nic"></a> [nic](#module\_nic)
 
@@ -148,7 +148,7 @@ Version:
 
 Source: Azure/regions/azurerm
 
-Version: ~> 0.3
+Version: 0.5.0
 
 ## Usage
 
