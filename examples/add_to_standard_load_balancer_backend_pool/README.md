@@ -74,6 +74,8 @@ resource "azurerm_public_ip" "this" {
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Standard"
+  zones               = ["1", "2", "3"]
 }
 
 resource "azurerm_lb" "this" {
