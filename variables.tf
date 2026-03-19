@@ -56,6 +56,31 @@ variable "resource_group_name" {
   nullable    = false
 }
 
+variable "accelerated_networking_enabled" {
+  type        = bool
+  default     = false
+  description = "(Optional) Specifies whether accelerated networking should be enabled on the network interface or not."
+}
+
+variable "application_gateway_backend_address_pool_association" {
+  type = object({
+    application_gateway_backend_address_pool_id = string
+    ip_configuration_name                       = string
+  })
+  default     = null
+  description = <<DESCRIPTION
+An object describing the application gateway to associate with the resource. This includes the following properties:
+- `application_gateway_backend_address_pool_id` - The resource ID of the application gateway backend address pool.
+- `ip_configuration_name` - The name of the network interface IP configuration.
+DESCRIPTION 
+}
+
+variable "application_security_group_ids" {
+  type        = list(string)
+  default     = null
+  description = "(Optional) List of application security group IDs."
+}
+
 variable "auxiliary_mode" {
   type        = string
   default     = null
@@ -80,31 +105,6 @@ variable "auxiliary_sku" {
     condition     = var.auxiliary_sku == null || contains(["A1", "A2", "A4", "A8", "None"], var.auxiliary_sku)
     error_message = "Possible values for `auxiliary_sku` are `A1`, `A2`, `A4`, `A8` and `None`."
   }
-}
-
-variable "accelerated_networking_enabled" {
-  type        = bool
-  default     = false
-  description = "(Optional) Specifies whether accelerated networking should be enabled on the network interface or not."
-}
-
-variable "application_gateway_backend_address_pool_association" {
-  type = object({
-    application_gateway_backend_address_pool_id = string
-    ip_configuration_name                       = string
-  })
-  default     = null
-  description = <<DESCRIPTION
-An object describing the application gateway to associate with the resource. This includes the following properties:
-- `application_gateway_backend_address_pool_id` - The resource ID of the application gateway backend address pool.
-- `ip_configuration_name` - The name of the network interface IP configuration.
-DESCRIPTION 
-}
-
-variable "application_security_group_ids" {
-  type        = list(string)
-  default     = null
-  description = "(Optional) List of application security group IDs."
 }
 
 variable "dns_servers" {
