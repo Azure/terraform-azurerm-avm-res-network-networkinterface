@@ -13,8 +13,8 @@ resource "azurerm_network_interface" "this" {
   name                           = var.name
   resource_group_name            = var.resource_group_name
   accelerated_networking_enabled = var.accelerated_networking_enabled
-  #auxiliary_mode                 = var.auxiliary_mode ## Settings in preview are disabled for stability
-  #auxiliary_sku                  = var.auxiliary_sku ## Settings in preview are disabled for stability
+  auxiliary_mode                  = var.auxiliary_mode
+  auxiliary_sku                   = var.auxiliary_sku
   dns_servers             = var.dns_servers
   edge_zone               = var.edge_zone
   internal_dns_name_label = var.internal_dns_name_label
