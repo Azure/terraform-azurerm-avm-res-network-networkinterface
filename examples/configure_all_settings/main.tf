@@ -100,14 +100,12 @@ resource "azurerm_public_ip" "this" {
   name                = "${each.key}-pip"
   resource_group_name = azurerm_resource_group.this.name
   sku                 = "Standard"
-  zones               = ["1", "2", "3"]
 }
 
 resource "azurerm_application_gateway" "this" {
   location            = azurerm_resource_group.this.location
   name                = local.example["application_gateway"].name
   resource_group_name = azurerm_resource_group.this.name
-  zones               = ["1", "2", "3"]
 
   backend_address_pool {
     name = "${local.example["application_gateway"].name}-backend-pool"
