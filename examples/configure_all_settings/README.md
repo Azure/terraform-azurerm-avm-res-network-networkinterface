@@ -106,7 +106,6 @@ resource "azurerm_public_ip" "this" {
   location            = azurerm_resource_group.this.location
   name                = "${each.key}-pip"
   resource_group_name = azurerm_resource_group.this.name
-  sku                 = "Standard"
 }
 
 resource "azurerm_application_gateway" "this" {
