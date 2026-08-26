@@ -81,6 +81,32 @@ variable "application_security_group_ids" {
   description = "(Optional) List of application security group IDs."
 }
 
+variable "auxiliary_mode" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies the auxiliary mode used to enable network high-performance feature on Network Virtual Appliances (NVAs). Possible values are `AcceleratedConnections`, `Floating`, `MaxConnections` and `None`."
+
+  validation {
+    condition     = var.auxiliary_mode == null || contains(["AcceleratedConnections", "Floating", "MaxConnections", "None"], var.auxiliary_mode)
+    error_message = "Possible values for `auxiliary_mode` are `AcceleratedConnections`, `Floating`, `MaxConnections` and `None`."
+  }
+  validation {
+    condition     = (var.auxiliary_mode == null) == (var.auxiliary_sku == null)
+    error_message = "`auxiliary_mode` and `auxiliary_sku` must be specified together."
+  }
+}
+
+variable "auxiliary_sku" {
+  type        = string
+  default     = null
+  description = "(Optional) Specifies the SKU used for the network high-performance feature on Network Virtual Appliances (NVAs). Possible values are `A1`, `A2`, `A4`, `A8` and `None`."
+
+  validation {
+    condition     = var.auxiliary_sku == null || contains(["A1", "A2", "A4", "A8", "None"], var.auxiliary_sku)
+    error_message = "Possible values for `auxiliary_sku` are `A1`, `A2`, `A4`, `A8` and `None`."
+  }
+}
+
 variable "dns_servers" {
   type        = list(string)
   default     = null
