@@ -56,6 +56,7 @@ resource "random_integer" "region_index" {
   max = length(module.regions.regions) - 1
   min = 0
 }
+
 ## End of section to provide a random Azure region for the resource group
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -80,10 +81,10 @@ resource "azurerm_virtual_network" "this" {
 resource "azurerm_subnet" "this" {
   count = 2
 
-  address_prefixes     = ["10.0.${count.index + 1}.0/24", "2001:db8:abcd:001${count.index + 2}::/64"]
   name                 = "example-${count.index + 1}"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.${count.index + 1}.0/24", "2001:db8:abcd:001${count.index + 2}::/64"]
 }
 
 resource "azurerm_network_security_group" "this" {
@@ -109,6 +110,7 @@ resource "azurerm_application_gateway" "this" {
   backend_address_pool {
     name = "${local.example["application_gateway"].name}-backend-pool"
   }
+
   backend_http_settings {
     cookie_based_affinity = "Disabled"
     name                  = "${local.example["application_gateway"].name}-backend-http"
@@ -116,24 +118,29 @@ resource "azurerm_application_gateway" "this" {
     protocol              = "Http"
     request_timeout       = 1
   }
+
   frontend_ip_configuration {
     name                 = "${local.example["application_gateway"].name}-frontend-ip"
     public_ip_address_id = azurerm_public_ip.this["application_gateway"].id
   }
+
   frontend_port {
     name = "${local.example["application_gateway"].name}-frontend-port"
     port = 80
   }
+
   gateway_ip_configuration {
     name      = "example"
     subnet_id = azurerm_subnet.this[0].id
   }
+
   http_listener {
     frontend_ip_configuration_name = "${local.example["application_gateway"].name}-frontend-ip"
     frontend_port_name             = "${local.example["application_gateway"].name}-frontend-port"
     name                           = "${local.example["application_gateway"].name}-listener-http"
     protocol                       = "Http"
   }
+
   request_routing_rule {
     http_listener_name         = "${local.example["application_gateway"].name}-listener-http"
     name                       = "${local.example["application_gateway"].name}-rule"
@@ -142,6 +149,7 @@ resource "azurerm_application_gateway" "this" {
     backend_http_settings_name = "${local.example["application_gateway"].name}-backend-http"
     priority                   = 25
   }
+
   sku {
     name     = "Standard_v2"
     tier     = "Standard_v2"

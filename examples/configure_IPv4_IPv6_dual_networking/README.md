@@ -28,7 +28,6 @@ provider "azurerm" {
   }
 }
 
-
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
 module "regions" {
@@ -41,6 +40,7 @@ resource "random_integer" "region_index" {
   max = length(module.regions.regions) - 1
   min = 0
 }
+
 ## End of section to provide a random Azure region for the resource group
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -63,10 +63,10 @@ resource "azurerm_virtual_network" "this" {
 }
 
 resource "azurerm_subnet" "this" {
-  address_prefixes     = ["10.0.0.0/24", "fd00:db8:deca:deed::/64"]
   name                 = "example"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.0.0/24", "fd00:db8:deca:deed::/64"]
 }
 
 # Creating a network interface with a unique name, telemetry settings, and in the specified resource group and location
