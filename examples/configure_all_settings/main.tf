@@ -251,7 +251,7 @@ module "nic" {
   }
   application_security_group_ids = azurerm_application_security_group.this[*].id
   dns_servers                    = ["10.0.1.5", "10.0.1.6", "10.0.1.7"]
-  enable_telemetry               = true
+  enable_telemetry               = false
   internal_dns_name_label        = "myinternaldnsnamelabel"
   ip_forwarding_enabled          = true
   load_balancer_backend_address_pool_association = {

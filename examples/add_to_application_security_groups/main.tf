@@ -85,5 +85,5 @@ module "nic" {
   name                           = module.naming.network_interface.name_unique
   resource_group_name            = azurerm_resource_group.this.name
   application_security_group_ids = azurerm_application_security_group.this[*].id
-  enable_telemetry               = true
+  enable_telemetry               = false
 }
