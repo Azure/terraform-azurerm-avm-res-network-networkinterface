@@ -172,5 +172,5 @@ module "nic" {
     application_gateway_backend_address_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
     ip_configuration_name                       = "internal"
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
 }

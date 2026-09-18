@@ -120,7 +120,7 @@ module "nic" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   nat_rule_association = {
     "association1" = {
       nat_rule_id           = azurerm_lb_nat_rule.rdp.id

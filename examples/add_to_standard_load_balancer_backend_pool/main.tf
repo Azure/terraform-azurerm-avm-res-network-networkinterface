@@ -107,7 +107,7 @@ module "nic" {
   location            = azurerm_resource_group.this.location
   name                = module.naming.network_interface.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  enable_telemetry    = false
+  enable_telemetry    = var.enable_telemetry
   load_balancer_backend_address_pool_association = {
     "association1" = {
       load_balancer_backend_address_pool_id = azurerm_lb_backend_address_pool.this[0].id
