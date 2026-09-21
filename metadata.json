@@ -6,5 +6,8 @@
   "owners": [
     "fafriha"
   ],
-  "telemetryIdPrefix": "46d3xtrf.res.177936d"
+  "telemetryIdPrefix": "46d3xtrf.res.177936d",
+  "alternativeNames": [
+    "NIC"
+  ]
 }
