@@ -33,6 +33,7 @@ resource "random_integer" "region_index" {
   max = length(module.regions.regions) - 1
   min = 0
 }
+
 ## End of section to provide a random Azure region for the resource group
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -57,10 +58,10 @@ resource "azurerm_virtual_network" "this" {
 resource "azurerm_subnet" "this" {
   count = 2
 
-  address_prefixes     = ["10.0.${count.index + 1}.0/24"]
   name                 = "example_${count.index + 1}"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.${count.index + 1}.0/24"]
 }
 
 resource "azurerm_public_ip" "this" {
@@ -84,6 +85,7 @@ resource "azurerm_application_gateway" "this" {
   backend_address_pool {
     name = "${azurerm_virtual_network.this.name}-backend-pool-2"
   }
+
   backend_http_settings {
     cookie_based_affinity = "Disabled"
     name                  = "${azurerm_virtual_network.this.name}-backend-http-80"
@@ -98,10 +100,12 @@ resource "azurerm_application_gateway" "this" {
     protocol              = "Http"
     request_timeout       = 20
   }
+
   frontend_ip_configuration {
     name                 = "${azurerm_virtual_network.this.name}-frontend-ip"
     public_ip_address_id = azurerm_public_ip.this.id
   }
+
   frontend_port {
     name = "${azurerm_virtual_network.this.name}-frontend-port-80"
     port = 80
@@ -110,10 +114,12 @@ resource "azurerm_application_gateway" "this" {
     name = "${azurerm_virtual_network.this.name}-frontend-port-8080"
     port = 8080
   }
+
   gateway_ip_configuration {
     name      = "example"
     subnet_id = azurerm_subnet.this[0].id
   }
+
   http_listener {
     frontend_ip_configuration_name = "${azurerm_virtual_network.this.name}-frontend-ip"
     frontend_port_name             = "${azurerm_virtual_network.this.name}-frontend-port-80"
@@ -126,6 +132,7 @@ resource "azurerm_application_gateway" "this" {
     name                           = "${azurerm_virtual_network.this.name}-listener-8080"
     protocol                       = "Http"
   }
+
   request_routing_rule {
     http_listener_name         = "${azurerm_virtual_network.this.name}-listener-80"
     name                       = "${azurerm_virtual_network.this.name}-rule-1"
@@ -142,6 +149,7 @@ resource "azurerm_application_gateway" "this" {
     backend_http_settings_name = "${azurerm_virtual_network.this.name}-backend-http-8080"
     priority                   = 25
   }
+
   sku {
     name = "Standard_v2"
     tier = "Standard_v2"
@@ -170,5 +178,5 @@ module "nic" {
     application_gateway_backend_address_pool_id = lookup({ for pool in azurerm_application_gateway.this.backend_address_pool : pool.name => pool.id }, "example-backend-pool-2", null)
     ip_configuration_name                       = "internal"
   }
-  enable_telemetry = true
+  enable_telemetry = var.enable_telemetry
 }
