@@ -212,6 +212,22 @@ Type: `list(string)`
 
 Default: `null`
 
+### <a name="input_auxiliary_mode"></a> [auxiliary\_mode](#input\_auxiliary\_mode)
+
+Description: (Optional) Specifies the auxiliary mode used to enable network high-performance feature on Network Virtual Appliances (NVAs). Possible values are `AcceleratedConnections`, `Floating`, `MaxConnections` and `None`.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_auxiliary_sku"></a> [auxiliary\_sku](#input\_auxiliary\_sku)
+
+Description: (Optional) Specifies the SKU used for the network high-performance feature on Network Virtual Appliances (NVAs). Possible values are `A1`, `A2`, `A4`, `A8` and `None`.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_dns_servers"></a> [dns\_servers](#input\_dns\_servers)
 
 Description: (Optional) Specifies a list of IP addresses representing DNS servers.

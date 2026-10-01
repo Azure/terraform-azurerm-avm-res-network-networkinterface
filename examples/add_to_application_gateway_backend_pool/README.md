@@ -76,12 +76,15 @@ resource "azurerm_public_ip" "this" {
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  sku                 = "Standard"
+  zones               = ["1", "2", "3"]
 }
 
 resource "azurerm_application_gateway" "this" {
   location            = azurerm_resource_group.this.location
   name                = "example"
   resource_group_name = azurerm_resource_group.this.name
+  zones               = ["1", "2", "3"]
 
   backend_address_pool {
     name = "${azurerm_virtual_network.this.name}-backend-pool-1"
@@ -155,9 +158,13 @@ resource "azurerm_application_gateway" "this" {
   }
 
   sku {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
-    capacity = 2
+    name = "Standard_v2"
+    tier = "Standard_v2"
+  }
+
+  autoscale_configuration {
+    min_capacity = 2
+    max_capacity = 3
   }
 }
 
