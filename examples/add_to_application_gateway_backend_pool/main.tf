@@ -154,6 +154,7 @@ resource "azurerm_application_gateway" "this" {
     name = "Standard_v2"
     tier = "Standard_v2"
   }
+
   autoscale_configuration {
     min_capacity = 2
     max_capacity = 3
