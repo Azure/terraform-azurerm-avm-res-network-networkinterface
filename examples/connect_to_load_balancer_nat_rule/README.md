@@ -32,7 +32,7 @@ provider "azurerm" {
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/regions/azurerm"
-  version = "0.5.0"
+  version = "0.8.2"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -46,7 +46,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "0.4.2"
+  version = "0.4.3"
 }
 
 # This is required for resource modules
@@ -198,7 +198,7 @@ The following Modules are called:
 
 Source: Azure/naming/azurerm
 
-Version: 0.4.2
+Version: 0.4.3
 
 ### <a name="module_nic"></a> [nic](#module\_nic)
 
@@ -210,7 +210,7 @@ Version:
 
 Source: Azure/regions/azurerm
 
-Version: 0.5.0
+Version: 0.8.2
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
